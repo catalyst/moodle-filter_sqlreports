@@ -73,3 +73,7 @@ grunt amd --root=filter/sqlreports
 - **No new XSS surface** — the renderer reuses `format_text` for table cells and an `<img>`-wrapped
   SVG for charts; filter output is a bare `data-` div.
 - External (non-Moodle iframe) embedding is out of scope.
+
+## License
+
+GNU GPL v3 or later — see [COPYING](https://www.gnu.org/licenses/gpl-3.0.html).
