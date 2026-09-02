@@ -118,4 +118,30 @@ final class filter_test extends \advanced_testcase {
         $filter = $this->make_filter();
         $this->assertSame('', $filter->filter(''));
     }
+
+    /**
+     * Off a real course (default $PAGE course is the site) the placeholder carries pagecourseid 0,
+     * so the downstream page-course filter is skipped and the viewer's other scoping still applies.
+     */
+    public function test_pagecourseid_zero_off_course(): void {
+        $this->resetAfterTest();
+        $filter = $this->make_filter();
+        $out = $filter->filter('[[sqlreport:42]]');
+        $this->assertStringContainsString('data-pagecourseid="0"', $out);
+    }
+
+    /**
+     * On a course page the placeholder carries that course id, so a report with a pagecoursecolumn
+     * is scoped to the course when the JS hydrator forwards it to the web service.
+     */
+    public function test_pagecourseid_from_course_page(): void {
+        global $PAGE;
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        $PAGE->set_course($course);
+
+        $filter = $this->make_filter();
+        $out = $filter->filter('[[sqlreport:42]]');
+        $this->assertStringContainsString('data-pagecourseid="' . $course->id . '"', $out);
+    }
 }
