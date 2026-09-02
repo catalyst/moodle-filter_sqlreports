@@ -55,21 +55,34 @@ class text_filter extends \core_filters\text_filter {
         // Load the hydrator once per page. Requesting it here (rather than lazily in JS) keeps the
         // placeholder markup free of inline script and works wherever the filter runs.
         global $PAGE;
+        $pagecourseid = 0;
         if ($PAGE instanceof \moodle_page) {
             $PAGE->requires->js_call_amd('filter_sqlreports/embed', 'init');
+
+            // Host page course id, mirroring block_sqlreports: on a course page it scopes rows to
+            // that course (for a report with a pagecoursecolumn). SITEID is the Dashboard/site front
+            // page — not a real course scope — so pass 0 there. The value only narrows the WS query
+            // (WHERE ... AND); it can never widen it, so emitting it to the client is safe.
+            if (!empty($PAGE->course->id)) {
+                $pagecourseid = (int) $PAGE->course->id;
+                if ($pagecourseid === (int) SITEID) {
+                    $pagecourseid = 0;
+                }
+            }
         }
 
         return preg_replace_callback(
             '/\[\[sqlreport:(\d+)(?:\s+(chart|table|auto))?\]\]/',
-            static function (array $m): string {
+            static function (array $m) use ($pagecourseid): string {
                 $reportid = (int) $m[1];
                 $mode     = $m[2] ?? 'auto';
                 return html_writer::div(
                     get_string('loading', 'filter_sqlreports'),
                     'sqlreport-embed',
                     [
-                        'data-reportid' => $reportid,
-                        'data-mode'     => $mode,
+                        'data-reportid'     => $reportid,
+                        'data-mode'         => $mode,
+                        'data-pagecourseid' => $pagecourseid,
                     ]
                 );
             },
