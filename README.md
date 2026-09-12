@@ -14,7 +14,7 @@ book chapter, forum post, course summary — with a Configurable-Reports-style m
 
 This complements the other view paths: the direct RB view URL and the plugin's own `chart.php`.
 
-## Why hydration is per-request (the one hard constraint)
+## Why the report is loaded per request (the one hard constraint)
 
 Moodle's `filter_manager` **caches filtered HTML keyed on text + context, not user.** These reports
 are per-viewer scoped (`useridcolumn` / `coursecolumn`) and audience-gated. If the filter
@@ -28,8 +28,10 @@ which is safe to share. The real content is fetched **live, per request, per use
 - `query::current_user_can_view_report()` — the same access gate as `/reportbuilder/view.php`;
 - `query::fetch_rows_for_viewer()` — the per-viewer / teacher-course / page-course row scoping.
 
-Embedding a report you cannot see shows **you** nothing. Unknown report id and no-access both return
-empty HTML (no existence oracle).
+Embedding a report you cannot see shows **you** nothing. A wrong report id and a report you have no
+access to look exactly the same — both show the same empty result. So a visitor can never tell
+"this report id does not exist" apart from "this report id exists but I am not allowed to see it",
+which stops other users from snooping which hidden reports exist.
 
 ## Architecture
 
@@ -56,23 +58,16 @@ Depends on `report_sql`. Drop this directory at `filter/sqlreports`, then
 **Site admin → Notifications** to install, and enable the filter at
 **Site admin → Plugins → Filters → Manage filters**.
 
-## Build
+## Get the marker from the block (if installed)
 
-The AMD source is `amd/src/embed.js`; the committed build is `amd/build/embed.min.js`. Rebuild from
-the Moodle root with:
-
-```
-grunt amd --root=filter/sqlreports
-```
-
-## Security
-
-- **No access bypass** — the embedder's edit rights are not the viewer's read rights; every hydrate
-  re-checks access per user.
-- **Cache-safe by construction** — only the inert placeholder is text-cached; data never is.
-- **No new XSS surface** — the renderer reuses `format_text` for table cells and an `<img>`-wrapped
-  SVG for charts; filter output is a bare `data-` div.
-- External (non-Moodle iframe) embedding is out of scope.
+If the companion `block_sqlreports` block is installed, you do not have to look up the Report
+Builder report id by hand. When you **edit** a page that has a SQL report block for the report you
+want, the block's footer shows a small **copy-embed-marker** button (`[[sqlreport:ID]]`) wired to
+core's click-to-copy. One click copies the finished marker — correct id and all — and you paste it
+straight into any filter-enabled text area. It is an editing-only helper (hidden from ordinary
+viewers, since it is raw markup), and it only appears for a block bound to a *published* report —
+both because the marker needs a bound Report Builder report id, and because only published reports
+can be embedded anyway.
 
 ## License
 

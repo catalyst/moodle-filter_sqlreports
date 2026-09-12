@@ -85,6 +85,36 @@ final class filter_test extends \advanced_testcase {
     }
 
     /**
+     * A hide= clause becomes a normalised data-hidecols attribute; labels are trimmed and the mode
+     * is still carried. No hide= clause means no attribute.
+     */
+    public function test_marker_with_hide(): void {
+        $this->resetAfterTest();
+        $filter = $this->make_filter();
+
+        $out = $filter->filter('[[sqlreport:5 table hide=Email, ID number ,Idnumber]]');
+        $this->assertStringContainsString('data-mode="table"', $out);
+        // Labels trimmed, order preserved, escaped by html_writer (& -> &amp; etc. not needed here).
+        $this->assertStringContainsString('data-hidecols="Email,ID number,Idnumber"', $out);
+
+        // Without the clause there is no attribute at all.
+        $plain = $filter->filter('[[sqlreport:5 table]]');
+        $this->assertStringNotContainsString('data-hidecols', $plain);
+    }
+
+    /**
+     * hide= works without an explicit mode (defaults to auto).
+     */
+    public function test_marker_hide_without_mode(): void {
+        $this->resetAfterTest();
+        $filter = $this->make_filter();
+
+        $out = $filter->filter('[[sqlreport:5 hide=Email]]');
+        $this->assertStringContainsString('data-mode="auto"', $out);
+        $this->assertStringContainsString('data-hidecols="Email"', $out);
+    }
+
+    /**
      * Several markers in one text each become their own placeholder.
      */
     public function test_multiple_markers(): void {

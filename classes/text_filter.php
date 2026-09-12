@@ -31,6 +31,16 @@ use core\output\html_writer;
  * Report Builder report id (as in the /reportbuilder/view.php?id= URL); access is re-checked
  * downstream regardless of who authored the text.
  *
+ * An optional `rb` flag (`[[sqlreport:5 rb]]`, `[[sqlreport:5 table rb]]`) renders a table embed
+ * through Report Builder's own interactive output — sortable, self-paging — instead of the default
+ * flat static table. It has no effect on a chart embed.
+ *
+ * An optional `hide=` clause drops columns by header label from the rendered table, e.g.
+ * `[[sqlreport:5 table hide=Email,ID number]]`. The clause comes last and takes a comma-separated
+ * list of header labels (case-insensitive, whitespace trimmed). It is a purely cosmetic client-side
+ * strip applied after the web service returns HTML; it never changes the query or the access gate,
+ * so it can only remove columns the viewer was already allowed to see. It has no effect on charts.
+ *
  * @package   filter_sqlreports
  * @copyright 2026 Marcus Green
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -72,18 +82,39 @@ class text_filter extends \core_filters\text_filter {
         }
 
         return preg_replace_callback(
-            '/\[\[sqlreport:(\d+)(?:\s+(chart|table|auto))?\]\]/',
+            '/\[\[sqlreport:(\d+)(?:\s+(chart|table|auto))?(?:\s+(rb))?(?:\s+hide=([^\]]+))?\]\]/',
             static function (array $m) use ($pagecourseid): string {
                 $reportid = (int) $m[1];
-                $mode     = $m[2] ?? 'auto';
+                $mode     = !empty($m[2]) ? $m[2] : 'auto';
+                // Optional "rb" flag: render the table through Report Builder's interactive output.
+                $render   = !empty($m[3]) ? 'rb' : '';
+
+                // Normalise the hide= list: split on comma, trim each label, drop empties, and
+                // re-join. The value is header labels (which may contain spaces), so only commas
+                // delimit. Emitted as a data-attribute for the JS hydrator to strip columns by
+                // label; html_writer escapes it. Empty/absent clause yields no attribute.
+                $hidecols = '';
+                if (!empty($m[4])) {
+                    $labels = array_filter(array_map('trim', explode(',', $m[4])), 'strlen');
+                    $hidecols = implode(',', $labels);
+                }
+
+                $attrs = [
+                    'data-reportid'     => $reportid,
+                    'data-mode'         => $mode,
+                    'data-pagecourseid' => $pagecourseid,
+                ];
+                if ($render !== '') {
+                    $attrs['data-render'] = $render;
+                }
+                if ($hidecols !== '') {
+                    $attrs['data-hidecols'] = $hidecols;
+                }
+
                 return html_writer::div(
                     get_string('loading', 'filter_sqlreports'),
                     'sqlreport-embed',
-                    [
-                        'data-reportid'     => $reportid,
-                        'data-mode'         => $mode,
-                        'data-pagecourseid' => $pagecourseid,
-                    ]
+                    $attrs
                 );
             },
             $text

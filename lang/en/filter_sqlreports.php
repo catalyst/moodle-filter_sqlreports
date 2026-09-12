@@ -29,4 +29,4 @@ $string['loading'] = 'Loading report…';
 $string['noaccess'] = 'You do not have permission to view this report.';
 $string['notfound'] = 'Report not found.';
 $string['privacy:metadata'] = 'The SQL report embed filter does not store any personal data. It renders reports owned by report_sql, which are subject to that plugin\'s access controls.';
-$string['syntax'] = 'Insert <code>[[sqlreport:ID]]</code> into any text to embed a published SQL report, where ID is the report id from its /reportbuilder/view.php?id= URL. Add <code>chart</code> or <code>table</code> to force a display mode, e.g. <code>[[sqlreport:5 chart]]</code>.';
+$string['syntax'] = 'Insert <code>[[sqlreport:ID]]</code> into any text to embed a published SQL report, where ID is the report id from its /reportbuilder/view.php?id= URL. Add <code>chart</code> or <code>table</code> to force a display mode, e.g. <code>[[sqlreport:5 chart]]</code>. Add <code>hide=</code> followed by a comma-separated list of column header labels to drop those columns from the table, e.g. <code>[[sqlreport:5 table hide=Email,ID number]]</code>.';
