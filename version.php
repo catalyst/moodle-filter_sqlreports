@@ -25,8 +25,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'filter_sqlreports';
-$plugin->release   = 2026082100;
-$plugin->version   = 2026082100;
+$plugin->release   = 2026082101;
+$plugin->version   = 2026082101;
 $plugin->requires  = 2024100100; // Moodle 4.5+ (classes/text_filter.php filter convention).
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->supported = [405, 503];
