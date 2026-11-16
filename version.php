@@ -31,5 +31,5 @@ $plugin->requires  = 2024100100; // Moodle 4.5+ (classes/text_filter.php filter 
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->supported = [405, 503];
 $plugin->dependencies = [
-    'report_sql' => ANY_VERSION,
+    'report_sql' => 2026080300,
 ];
