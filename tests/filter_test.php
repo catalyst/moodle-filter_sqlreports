@@ -30,7 +30,6 @@ namespace filter_sqlreports;
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class filter_test extends \advanced_testcase {
-
     /**
      * Build a filter instance bound to the system context.
      *

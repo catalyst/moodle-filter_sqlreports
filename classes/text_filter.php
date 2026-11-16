@@ -46,7 +46,6 @@ use core\output\html_writer;
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class text_filter extends \core_filters\text_filter {
-
     /**
      * Replace every marker with a placeholder div. Kept brutally cheap: it runs over all filtered
      * text, so a fast substring bail precedes the regex.
