@@ -1,0 +1,18 @@
+# .github/workflows/ci.yml
+name: ci
+
+on: [push, pull_request]
+
+jobs:
+  ci:
+    uses: catalyst/catalyst-moodle-workflows/.github/workflows/ci.yml@main
+    with:
+      # TEMPORARY workaround for catalyst-moodle-workflows#182: `add-plugin` doesn't install into the snapshot-based test site.
+      # Revert to `moodle-plugin-ci add-plugin` once the shared workflow is fixed.
+      extra_plugin_runners: |
+        WEBROOT="$GITHUB_WORKSPACE/moodle"
+        if [ -d "$WEBROOT/public" ]; then WEBROOT="$WEBROOT/public"; fi
+        git clone --depth 1 --branch MOODLE_405_STABLE https://github.com/catalyst/moodle-report_sql.git "$WEBROOT/report/sql"
+    secrets: inherit
+    permissions:
+      contents: write
